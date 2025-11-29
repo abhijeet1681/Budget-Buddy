@@ -1,31 +1,36 @@
-// server/server.js
-import express from "express";
-import mongoose from "mongoose";
-import cors from "cors";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import axios from "axios"; 
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const bcryptjs = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const axios = require("axios");
+const dotenv = require("dotenv");
+const path = require("path");
+
+dotenv.config();
 
 const app = express();
-const PORT = 5000;
-const JWT_SECRET = "mysecret"; 
-
+const PORT = process.env.PORT || 5000;
+const JWT_SECRET = process.env.JWT_SECRET || "mysecret";
 
 app.use(cors());
 app.use(express.json());
 
-
+// -----------------------------------------
+// ✅ MONGO DB CONNECTION
+// -----------------------------------------
 mongoose
-  .connect("mongodb://127.0.0.1:27017/budgetbuddy", {
+  .connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/budgetbuddy", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ MongoDB error:", err));
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.error("❌ MongoDB Error:", err));
 
-
-import mongoosePkg from "mongoose";
-const { Schema, model } = mongoosePkg;
+// -----------------------------------------
+// USER MODEL
+// -----------------------------------------
+const { Schema, model } = mongoose;
 
 const UserSchema = new Schema({
   name: String,
@@ -41,6 +46,9 @@ const UserSchema = new Schema({
 const User = model("User", UserSchema);
 
 
+// -----------------------------------------
+// SIGNUP
+// -----------------------------------------
 app.post("/signup", async (req, res) => {
   try {
     const { name, email, password, phone, designation, company, location, bio } =
@@ -50,9 +58,8 @@ app.post("/signup", async (req, res) => {
     if (existingUser)
       return res.status(400).json({ message: "Email already in use" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = new User({
+    const hashedPassword = await bcryptjs.hash(password, 10);
+    const newUser = new User({
       name,
       email,
       password: hashedPassword,
@@ -62,7 +69,8 @@ app.post("/signup", async (req, res) => {
       location,
       bio,
     });
-    await user.save();
+
+    await newUser.save();
 
     res.json({ message: "Signup successful" });
   } catch (err) {
@@ -71,17 +79,21 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+
+// -----------------------------------------
+// LOGIN
+// -----------------------------------------
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
+    if (!user)
       return res.status(400).json({ message: "Invalid credentials" });
 
+    const isMatch = await bcryptjs.compare(password, user.password);
+    if (!isMatch)
+      return res.status(400).json({ message: "Invalid credentials" });
     const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1h" });
 
     res.json({
@@ -96,6 +108,9 @@ app.post("/login", async (req, res) => {
 });
 
 
+// -----------------------------------------
+// MIDDLEWARE
+// -----------------------------------------
 const authMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ message: "Unauthorized" });
@@ -105,15 +120,20 @@ const authMiddleware = (req, res, next) => {
     req.userId = decoded.id;
     next();
   } catch (err) {
-    res.status(401).json({ message: "Invalid token" });
+    return res.status(401).json({ message: "Invalid token" });
   }
 };
 
-// ------------------ PROFILE ROUTE ------------------
+
+// -----------------------------------------
+// PROFILE
+// -----------------------------------------
 app.get("/profile", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId).select("-password");
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user)
+      return res.status(404).json({ message: "User not found" });
+
     res.json({ user });
   } catch (err) {
     console.error("Profile fetch error:", err);
@@ -121,7 +141,37 @@ app.get("/profile", authMiddleware, async (req, res) => {
   }
 });
 
+// UPDATE PROFILE
+app.put("/profile", authMiddleware, async (req, res) => {
+  try {
+    const { name, email, phone, designation, company, location, bio } = req.body;
+    
+    const user = await User.findById(req.userId);
+    if (!user)
+      return res.status(404).json({ message: "User not found" });
 
+    // Update user fields
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (phone) user.phone = phone;
+    if (designation) user.designation = designation;
+    if (company) user.company = company;
+    if (location) user.location = location;
+    if (bio) user.bio = bio;
+
+    await user.save();
+
+    res.json({ message: "Profile updated successfully", user });
+  } catch (err) {
+    console.error("Profile update error:", err);
+    res.status(500).json({ message: "Error updating profile", error: err });
+  }
+});
+
+
+// -----------------------------------------
+// EXPENSE MODEL
+// -----------------------------------------
 const ExpenseSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: "User" },
   monthlySalary: Number,
@@ -135,11 +185,15 @@ const ExpenseSchema = new Schema({
 const Expense = model("Expense", ExpenseSchema);
 
 
+// -----------------------------------------
+// GET EXPENSES
+// -----------------------------------------
 app.get("/expenses", authMiddleware, async (req, res) => {
   try {
     const expenses = await Expense.find({ userId: req.userId }).sort({
       date: -1,
     });
+
     res.json(expenses);
   } catch (err) {
     console.error("Fetch expenses error:", err);
@@ -147,6 +201,10 @@ app.get("/expenses", authMiddleware, async (req, res) => {
   }
 });
 
+
+// -----------------------------------------
+// ADD EXPENSE
+// -----------------------------------------
 app.post("/expenses", authMiddleware, async (req, res) => {
   try {
     const { monthlySalary, category, amount, date, paymentMethod, notes } =
@@ -171,9 +229,37 @@ app.post("/expenses", authMiddleware, async (req, res) => {
 });
 
 
+// -----------------------------------------
+// DELETE EXPENSE
+// -----------------------------------------
+app.delete("/expenses/:id", authMiddleware, async (req, res) => {
+  try {
+    const expenseId = req.params.id;
+    const expense = await Expense.findById(expenseId);
+    
+    if (!expense) {
+      return res.status(404).json({ message: "Expense not found" });
+    }
+
+    // Verify expense belongs to authenticated user
+    if (expense.userId.toString() !== req.userId.toString()) {
+      return res.status(403).json({ message: "Unauthorized: Cannot delete this expense" });
+    }
+
+    await Expense.findByIdAndDelete(expenseId);
+    res.json({ message: "Expense deleted successfully", expense });
+  } catch (err) {
+    console.error("Delete expense error:", err);
+    res.status(500).json({ message: "Error deleting expense", error: err.message });
+  }
+});
+
+
+// -----------------------------------------
+// ML PREDICTION
+// -----------------------------------------
 app.post("/predict", async (req, res) => {
   try {
-    // Forward request to Flask ML API
     const response = await axios.post("http://127.0.0.1:5001/predict", req.body);
     res.json(response.data);
   } catch (err) {
@@ -182,7 +268,18 @@ app.post("/predict", async (req, res) => {
   }
 });
 
+// -----------------------------------------
+// HEALTH CHECK
+// -----------------------------------------
+app.get("/health", (req, res) => {
+  res.json({ status: "Server is running" });
+});
 
+// -----------------------------------------
+// SERVER START
+// -----------------------------------------
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
+
+module.exports = app;

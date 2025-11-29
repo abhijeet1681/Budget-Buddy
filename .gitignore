@@ -1,0 +1,49 @@
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+// # Environment Variables
+.env
+.env.local
+.env.development
+.env.production
+
+// # Logs
+logs
+// *.log
+debug.log
+error.log
+
+// # Build Output
+dist/
+build/
+
+// // # IDE / Editor Files
+// .vscode/
+// .idea/
+// *.swp
+
+// # System Files
+.DS_Store
+Thumbs.db
+
+// # Coverage Reports
+coverage/
+
+// # Temporary Files
+tmp/
+temp/
+// *.tmp
+
+// # Cache
+// .cache/
+// .eslintcache
+
+// # React Specific
+// *.pem
+// *.crt
+
+// # Optional: If using Firebase/Google services
+.serviceaccount.json

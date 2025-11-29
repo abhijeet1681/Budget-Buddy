@@ -24,3 +24,50 @@
   border: none;
   width: 250px;
 }
+
+/* Tablet (768px and below) */
+@media (max-width: 768px) {
+  .hero {
+    height: 70vh;
+    padding: 0 15px;
+  }
+
+  .hero-content h1 {
+    font-size: 2rem;
+    margin-bottom: 15px;
+  }
+
+  .hero-content p {
+    font-size: 1rem;
+    margin-bottom: 15px;
+  }
+
+  .hero-content input {
+    width: 200px;
+    padding: 8px;
+  }
+}
+
+/* Mobile (480px and below) */
+@media (max-width: 480px) {
+  .hero {
+    height: 60vh;
+    padding: 0 10px;
+  }
+
+  .hero-content h1 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+
+  .hero-content p {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+
+  .hero-content input {
+    width: 150px;
+    padding: 6px;
+    font-size: 12px;
+  }
+}

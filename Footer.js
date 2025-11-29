@@ -7,16 +7,16 @@ function Footer() {
       <div className="footer-content">
         <p>© {new Date().getFullYear()} BudgetBuddy. All Rights Reserved.</p>
         <p>
-          Created by <strong>Priya Venu Dusa</strong>
+          Created by <strong>Abhijeet Jadhav</strong>
         </p>
         <p>
           📧{" "}
           <a
-            href="https://mail.google.com/mail/?view=cm&fs=1&to=priyadusa26@gmail.com"
+            href="https://mail.google.com/mail/?view=cm&fs=1&to=abhijeet9274@gmail.com"
             target="_blank"
             rel="noopener noreferrer"
           >
-            priyadusa26@gmail.com
+            abhijeet9274@gmail.com
           </a>{" "}
           | 📞{" "}
           <a href="tel:+919833525518">+91 98335 25518</a>
