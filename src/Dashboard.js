@@ -24,7 +24,8 @@ function Dashboard() {
 
   const fetchExpenses = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/expenses", {
+      const apiUrl = process.env.REACT_APP_API_URL || "";
+      const res = await axios.get(`${apiUrl}/expenses`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setExpenses(res.data);
@@ -57,8 +58,9 @@ function Dashboard() {
     setSuccess("");
 
     try {
+      const apiUrl = process.env.REACT_APP_API_URL || "";
       const res = await axios.post(
-        "http://localhost:5000/expenses",
+        `${apiUrl}/expenses`,
         {
           monthlySalary: parseFloat(salary),
           category: "Salary",
@@ -93,8 +95,9 @@ function Dashboard() {
     setSuccess("");
 
     try {
+      const apiUrl = process.env.REACT_APP_API_URL || "";
       const res = await axios.post(
-        "http://localhost:5000/expenses",
+        `${apiUrl}/expenses`,
         {
           ...formData,
           amount: parseFloat(formData.amount),
@@ -133,6 +136,7 @@ function Dashboard() {
     setSuccess("");
 
     try {
+      const apiUrl = process.env.REACT_APP_API_URL || "";
       const updateData = {
         ...editFormData,
         amount: parseFloat(editFormData.amount)
@@ -143,12 +147,12 @@ function Dashboard() {
       }
 
       // Since the backend doesn't have an update endpoint, we'll delete and re-add
-      await axios.delete(`http://localhost:5000/expenses/${expenseId}`, {
+      await axios.delete(`${apiUrl}/expenses/${expenseId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       await axios.post(
-        "http://localhost:5000/expenses",
+        `${apiUrl}/expenses`,
         {
           ...updateData,
           date: new Date().toISOString()
@@ -178,7 +182,8 @@ function Dashboard() {
     setSuccess("");
 
     try {
-      await axios.delete(`http://localhost:5000/expenses/${expenseId}`, {
+      const apiUrl = process.env.REACT_APP_API_URL || "";
+      await axios.delete(`${apiUrl}/expenses/${expenseId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

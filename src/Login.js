@@ -17,7 +17,8 @@ function Login() {
     
     try {
       console.log("Attempting login with:", { email, password });
-      const res = await axios.post("http://localhost:5000/login", { 
+      const apiUrl = process.env.REACT_APP_API_URL || "";
+      const res = await axios.post(`${apiUrl}/login`, { 
         email, 
         password 
       });

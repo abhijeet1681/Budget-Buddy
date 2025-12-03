@@ -9,7 +9,8 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/login", { email, password });
+      const apiUrl = process.env.REACT_APP_API_URL || "";
+      const res = await axios.post(`${apiUrl}/login`, { email, password });
       localStorage.setItem("token", res.data.token);
       setMessage("Login successful! Redirecting...");
       setTimeout(() => {

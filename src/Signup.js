@@ -30,7 +30,8 @@ function Signup() {
     
     try {
       console.log("Attempting signup with:", formData);
-      const response = await axios.post("http://localhost:5000/signup", formData);
+      const apiUrl = process.env.REACT_APP_API_URL || "";
+      const response = await axios.post(`${apiUrl}/signup`, formData);
       
       console.log("Signup response:", response.data);
       setMessage("✅ Signup successful! Please login now.");

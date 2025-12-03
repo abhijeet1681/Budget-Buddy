@@ -32,7 +32,8 @@ function Profile() {
         return;
       }
 
-      const res = await axios.get("http://localhost:5000/profile", {
+      const apiUrl = process.env.REACT_APP_API_URL || "";
+      const res = await axios.get(`${apiUrl}/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -73,7 +74,8 @@ function Profile() {
         return;
       }
 
-      await axios.put("http://localhost:5000/profile", editData, {
+      const apiUrl = process.env.REACT_APP_API_URL || "";
+      await axios.put(`${apiUrl}/profile`, editData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

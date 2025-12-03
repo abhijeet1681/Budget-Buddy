@@ -21,8 +21,9 @@ function Totalexpenses() {
 
   useEffect(() => {
     if (!token) return;
+    const apiUrl = process.env.REACT_APP_API_URL || "";
     axios
-      .get("http://localhost:5000/expenses", {
+      .get(`${apiUrl}/expenses`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
@@ -42,8 +43,9 @@ function Totalexpenses() {
     if (!token) return alert("Please login first");
 
     try {
+      const apiUrl = process.env.REACT_APP_API_URL || "";
       await axios.post(
-        "http://localhost:5000/expenses",
+        `${apiUrl}/expenses`,
         { ...formData, monthlySalary: Number(monthlySalary) },
         { headers: { Authorization: `Bearer ${token}` } }
       );

@@ -13,8 +13,22 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || "mysecret";
 
-app.use(cors());
+// Enhanced CORS configuration for Vercel
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:5000",
+    process.env.FRONTEND_URL,
+    "*.vercel.app"
+  ].filter(Boolean),
+  credentials: true
+}));
 app.use(express.json());
+
+// Serve static files from React build (for Vercel)
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'build')));
+}
 
 // -----------------------------------------
 // ✅ MONGO DB CONNECTION
@@ -274,6 +288,15 @@ app.post("/predict", async (req, res) => {
 app.get("/health", (req, res) => {
   res.json({ status: "Server is running" });
 });
+
+// -----------------------------------------
+// CATCH-ALL ROUTE FOR REACT (Vercel)
+// -----------------------------------------
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+  });
+}
 
 // -----------------------------------------
 // SERVER START

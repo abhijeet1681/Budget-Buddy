@@ -25,8 +25,9 @@ function MonthlyChart() {
     }
 
     const fetchExpenses = () => {
+      const apiUrl = process.env.REACT_APP_API_URL || "";
       axios
-        .get("http://localhost:5000/expenses", {
+        .get(`${apiUrl}/expenses`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
